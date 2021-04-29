@@ -1,69 +1,76 @@
 /* @flow */
 
-import config from '../config'
-import { initUse } from './use'
-import { initMixin } from './mixin'
-import { initExtend } from './extend'
-import { initAssetRegisters } from './assets'
-import { set, del } from '../observer/index'
-import { ASSET_TYPES } from 'shared/constants'
-import builtInComponents from '../components/index'
-import { observe } from 'core/observer/index'
+import config from "../config";
+import { initUse } from "./use";
+import { initMixin } from "./mixin";
+import { initExtend } from "./extend";
+import { initAssetRegisters } from "./assets";
+import { set, del } from "../observer/index";
+import { ASSET_TYPES } from "shared/constants";
+import builtInComponents from "../components/index";
+import { observe } from "core/observer/index";
 
 import {
   warn,
   extend,
   nextTick,
   mergeOptions,
-  defineReactive
-} from '../util/index'
+  defineReactive,
+} from "../util/index";
 
-export function initGlobalAPI (Vue: GlobalAPI) {
+export function initGlobalAPI(Vue: GlobalAPI) {
   // config
-  const configDef = {}
-  configDef.get = () => config
-  if (process.env.NODE_ENV !== 'production') {
+  const configDef = {};
+  configDef.get = () => config;
+  if (process.env.NODE_ENV !== "production") {
     configDef.set = () => {
       warn(
-        'Do not replace the Vue.config object, set individual fields instead.'
-      )
-    }
+        "Do not replace the Vue.config object, set individual fields instead."
+      );
+    };
   }
-  Object.defineProperty(Vue, 'config', configDef)
+  // 初始化vue.config对象
+  Object.defineProperty(Vue, "config", configDef);
 
   // exposed util methods.
   // NOTE: these are not considered part of the public API - avoid relying on
   // them unless you are aware of the risk.
+  // 这些工具方法不视作全局API的一部分，除非你已经意识到某些风险，否则不要去依赖他们
   Vue.util = {
     warn,
     extend,
     mergeOptions,
-    defineReactive
-  }
-
-  Vue.set = set
-  Vue.delete = del
-  Vue.nextTick = nextTick
+    defineReactive,
+  };
+  // 静态方法：set/delete/nextTick
+  Vue.set = set;
+  Vue.delete = del;
+  Vue.nextTick = nextTick;
 
   // 2.6 explicit observable API
-  Vue.observable = <T>(obj: T): T => {
-    observe(obj)
-    return obj
-  }
-
-  Vue.options = Object.create(null)
-  ASSET_TYPES.forEach(type => {
-    Vue.options[type + 's'] = Object.create(null)
-  })
+  // 让一个对象变成响应式对象
+  Vue.observable = <>(obj: T): T => {
+    observe(obj);
+    return obj;
+  };
+  //初始化vue.config对象，并给其扩展
+  //components/directives/filters/_base
+  Vue.options = Object.create(null);
+  ASSET_TYPES.forEach((type) => {
+    Vue.options[type + "s"] = Object.create(null);
+  });
 
   // this is used to identify the "base" constructor to extend all plain-object
   // components with in Weex's multi-instance scenarios.
-  Vue.options._base = Vue
-
-  extend(Vue.options.components, builtInComponents)
-
-  initUse(Vue)
-  initMixin(Vue)
-  initExtend(Vue)
-  initAssetRegisters(Vue)
+  Vue.options._base = Vue;
+  //设置keep-alive组件
+  extend(Vue.options.components, builtInComponents);
+  //注册Vue.use()用来注册插件
+  initUse(Vue);
+  //注册Vue.mixin()用来实现混入
+  initMixin(Vue);
+  //注册Vue.extends()基于传入的options返回一个组件的构造函数
+  initExtend(Vue);
+  //注册Vue.directive()，Vue.component()，Vue.filter()
+  initAssetRegisters(Vue);
 }
