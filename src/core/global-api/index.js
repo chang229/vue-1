@@ -17,7 +17,7 @@ import {
   mergeOptions,
   defineReactive,
 } from "../util/index";
-
+// 注册vue的静态属性/方法
 export function initGlobalAPI(Vue: GlobalAPI) {
   // config
   const configDef = {};
@@ -56,6 +56,7 @@ export function initGlobalAPI(Vue: GlobalAPI) {
   //初始化vue.config对象，并给其扩展
   //components/directives/filters/_base
   Vue.options = Object.create(null);
+  //初始化vue.options的components/directives/filters属性
   ASSET_TYPES.forEach((type) => {
     Vue.options[type + "s"] = Object.create(null);
   });
@@ -63,14 +64,19 @@ export function initGlobalAPI(Vue: GlobalAPI) {
   // this is used to identify the "base" constructor to extend all plain-object
   // components with in Weex's multi-instance scenarios.
   Vue.options._base = Vue;
+      
   //设置keep-alive组件
   extend(Vue.options.components, builtInComponents);
+      
   //注册Vue.use()用来注册插件
   initUse(Vue);
+      
   //注册Vue.mixin()用来实现混入
   initMixin(Vue);
+      
   //注册Vue.extends()基于传入的options返回一个组件的构造函数
   initExtend(Vue);
+      
   //注册Vue.directive()，Vue.component()，Vue.filter()
   initAssetRegisters(Vue);
 }
