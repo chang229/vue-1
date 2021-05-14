@@ -33,7 +33,7 @@ Vue.prototype.$mount = function (
       );
     return this;
   }
-
+  //当前this指向vue实例
   const options = this.$options;
   // resolve template/el and convert to render function
   // 如果没有传入render就把template转换成render函数
@@ -91,6 +91,7 @@ Vue.prototype.$mount = function (
     }
   }
   // 如果传入了render则直接调用mount方法，挂载DOM，忽略template
+  //this指向当前vue实例
   return mount.call(this, el, hydrating);
 };
 

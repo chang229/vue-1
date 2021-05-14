@@ -51,6 +51,7 @@ export function initState(vm: Component) {
   const opts = vm.$options;
   if (opts.props) initProps(vm, opts.props);
   if (opts.methods) initMethods(vm, opts.methods);
+  //数据得初始化
   if (opts.data) {
     initData(vm);
   } else {
@@ -111,7 +112,7 @@ function initProps(vm: Component, propsOptions: Object) {
   }
   toggleObserving(true);
 }
-
+// vm数据初始化
 function initData(vm: Component) {
   let data = vm.$options.data;
   //初始化_data，组件中data是函数，调用函数返回结果，否则直接返回结果
@@ -367,19 +368,25 @@ export function stateMixin(Vue: Class<Component>) {
     cb: any,
     options?: Object
   ): Function {
+    //获取vue实例this
     const vm: Component = this;
     if (isPlainObject(cb)) {
+      //判断cb如果是对象执行createWatcher
       return createWatcher(vm, expOrFn, cb, options);
     }
     options = options || {};
+    //标记为用户watcher
     options.user = true;
+    //创建用户watcher
     const watcher = new Watcher(vm, expOrFn, cb, options);
+    //判断immediate如果为true,立即执行一次cb回调，并且把当前值传入
     if (options.immediate) {
       const info = `callback for immediate watcher "${watcher.expression}"`;
       pushTarget();
       invokeWithErrorHandling(cb, vm, [watcher.value], vm, info);
       popTarget();
     }
+    //返回取消监听的方法
     return function unwatchFn() {
       watcher.teardown();
     };

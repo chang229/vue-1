@@ -28,6 +28,7 @@ const weexFactoryPlugin = {
 };
 // aliases中导出了所有的别名对应的路径信息
 const aliases = require("./alias");
+// 获取入口和出口文件的绝对路径
 const resolve = (p) => {
   // 根据路径中的前半部分去aliases中找别名
   const base = p.split("/")[0];
@@ -126,6 +127,7 @@ const builds = {
   //npm run dev命令对应这个rollup配置
   "web-full-dev": {
     //入口文件src/platforms/web/entry-runtime-with-compiler.js
+    //resolve获取入口和出口文件的绝对路径
     entry: resolve("web/entry-runtime-with-compiler.js"),
     dest: resolve("dist/vue.js"),
     format: "umd",
@@ -232,6 +234,7 @@ const builds = {
 
 function genConfig(name) {
   // 根据传入的name属性调用builds生成配置信息
+  //builds[name]获取生成的配置信息
   const opts = builds[name];
   const config = {
     input: opts.entry,
@@ -284,6 +287,7 @@ if (process.env.TARGET) {
   // 如果有Tagrte调用genConfig方法生成rollup配置文件（TARGET=web-full-dev）
   module.exports = genConfig(process.env.TARGET);
 } else {
+  //否则获取全部配置
   exports.getBuild = genConfig;
   exports.getAllBuilds = () => Object.keys(builds).map(genConfig);
 }

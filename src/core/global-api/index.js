@@ -53,6 +53,7 @@ export function initGlobalAPI(Vue: GlobalAPI) {
     observe(obj);
     return obj;
   };
+  
   //初始化vue.config对象，并给其扩展
   //components/directives/filters/_base
   Vue.options = Object.create(null);
