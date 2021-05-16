@@ -29,6 +29,8 @@ export function simpleNormalizeChildren (children: any) {
 // with hand-written render functions / JSX. In such cases a full normalization
 // is needed to cater to all possible types of children values.
 export function normalizeChildren (children: any): ?Array<VNode> {
+  // 如果children是原始值，将children转换给一个文本节点的VNode
+  // 如果children是数组，则children中的元素有可能也是数组，对于后续处理不太方便，将children拍平转换成一维数组 
   return isPrimitive(children)
     ? [createTextVNode(children)]
     : Array.isArray(children)

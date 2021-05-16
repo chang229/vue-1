@@ -70,13 +70,16 @@ function createKeyToOldIdx (children, beginIdx, endIdx) {
 export function createPatchFunction (backend) {
   let i, j
   const cbs = {}
-
+  //modules节点的操作/事件/样式的操作
+  //nodeOps 节点操作 
   const { modules, nodeOps } = backend
 
   for (i = 0; i < hooks.length; ++i) {
+    // cbs['update'] = []
     cbs[hooks[i]] = []
     for (j = 0; j < modules.length; ++j) {
       if (isDef(modules[j][hooks[i]])) {
+        //cbs['update'] = [updateAttrs,opdataClass,...]
         cbs[hooks[i]].push(modules[j][hooks[i]])
       }
     }
@@ -506,6 +509,7 @@ export function createPatchFunction (backend) {
     index,
     removeOnly
   ) {
+    //如果新旧节点是完全相同的节点，直接返回
     if (oldVnode === vnode) {
       return
     }
@@ -548,24 +552,37 @@ export function createPatchFunction (backend) {
     const oldCh = oldVnode.children
     const ch = vnode.children
     if (isDef(data) && isPatchable(vnode)) {
+      //调用cbs中的钩子函数，操作节点的属性/样式/事件 
       for (i = 0; i < cbs.update.length; ++i) cbs.update[i](oldVnode, vnode)
+      //用户的自定义钩子
       if (isDef(i = data.hook) && isDef(i = i.update)) i(oldVnode, vnode)
     }
+    // 新节点没有文本
     if (isUndef(vnode.text)) {
+        // 老节点和新节点都有子节点
+        // 对子节点进行diff对比，调用updateChildren
       if (isDef(oldCh) && isDef(ch)) {
         if (oldCh !== ch) updateChildren(elm, oldCh, ch, insertedVnodeQueue, removeOnly)
       } else if (isDef(ch)) {
+        //新节点有子节点，老节点没有子节点
         if (process.env.NODE_ENV !== 'production') {
           checkDuplicateKeys(ch)
         }
+        // 先清空老节点DOM的文本内容，然后为当前DOM节点加入子节点
         if (isDef(oldVnode.text)) nodeOps.setTextContent(elm, '')
         addVnodes(elm, null, ch, 0, ch.length - 1, insertedVnodeQueue)
       } else if (isDef(oldCh)) {
+        //老节点有子节点，新的没有子节点
+        // 删除老节点中的子节点
         removeVnodes(oldCh, 0, oldCh.length - 1)
       } else if (isDef(oldVnode.text)) {
+        // 老节点有文本，新节点没有文本
+        // 清空老节点的文本内容
         nodeOps.setTextContent(elm, '')
       }
     } else if (oldVnode.text !== vnode.text) {
+      // 新老节点都有文本节点
+      // 修改文本
       nodeOps.setTextContent(elm, vnode.text)
     }
     if (isDef(data)) {
@@ -696,8 +713,12 @@ export function createPatchFunction (backend) {
       return node.nodeType === (vnode.isComment ? 8 : 3)
     }
   }
-
+  //函数柯里化，让一个函数返回另一个函数
+  //createPathFunction({nodeOps,modules})传入平台相关的两个参数
+  //core中的createPathFunction(backend),const{module,nodeOps} 
+  //core中方法和平台无关，传入两个参数后，可以在上面的函数中使用者两个参数
   return function patch (oldVnode, vnode, hydrating, removeOnly) {
+    //如果没有vnode但是有oldvnode，执行销毁的钩子函数
     if (isUndef(vnode)) {
       if (isDef(oldVnode)) invokeDestroyHook(oldVnode)
       return
@@ -705,17 +726,23 @@ export function createPatchFunction (backend) {
 
     let isInitialPatch = false
     const insertedVnodeQueue = []
-
+    // 老的VNode不存在
     if (isUndef(oldVnode)) {
       // empty mount (likely as component), create new root element
       isInitialPatch = true
+      //创建新的VNode,保存在内存中，并不去挂载
       createElm(vnode, insertedVnodeQueue)
     } else {
+      // 新的和老的VNode都存在，更新
       const isRealElement = isDef(oldVnode.nodeType)
+      //判断参数1是否是真实DOM
       if (!isRealElement && sameVnode(oldVnode, vnode)) {
         // patch existing root node
+        // 更新操作：diff算法
         patchVnode(oldVnode, vnode, insertedVnodeQueue, null, null, removeOnly)
       } else {
+        //第一个参数是真实DOM，创建VNode
+        // 初始化
         if (isRealElement) {
           // mounting to a real element
           // check if this is server-rendered content and if we can perform

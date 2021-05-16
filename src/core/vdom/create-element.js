@@ -36,6 +36,7 @@ export function createElement(
     children = data;
     data = undefined;
   }
+  //如果是用户传入的render,将normalizationType设置为2
   if (isTrue(alwaysNormalize)) {
     normalizationType = ALWAYS_NORMALIZE;
   }
@@ -49,6 +50,7 @@ export function _createElement(
   children?: any,
   normalizationType?: number
 ): VNode | Array<VNode> {
+  //如果data不为空，并且data是响应式的，则返回一个空的VNode 
   if (isDef(data) && isDef((data: any).__ob__)) {
     process.env.NODE_ENV !== "production" &&
       warn(
@@ -59,15 +61,19 @@ export function _createElement(
       );
     return createEmptyVNode();
   }
+  //<component v-bind:is="currentTabComponent"></component>
   // object syntax in v-bind
+  //将data中的is属性赋值给tag 
   if (isDef(data) && isDef(data.is)) {
     tag = data.is;
   }
+  //如果tag是false，返回空的节点
   if (!tag) {
     // in case of component :is set to falsy value
     return createEmptyVNode();
   }
   // warn against non-primitive key
+  //判读设置的key是不是原始值，不是原始值会报出警告
   if (
     process.env.NODE_ENV !== "production" &&
     isDef(data) &&
@@ -83,20 +89,32 @@ export function _createElement(
     }
   }
   // support single function children as default scoped slot
+  //判断作用域插槽slot
   if (Array.isArray(children) && typeof children[0] === "function") {
     data = data || {};
     data.scopedSlots = { default: children[0] };
     children.length = 0;
   }
+  //去处理children
   if (normalizationType === ALWAYS_NORMALIZE) {
+    //当手写render函数的时候调用
+    // 判断children的类型，如果是原始值的话转换成VNode的数组
+    // 如果是数组的话，继续处理数组中的元素
+    // 如果数组中的子元素又是数组（slot template），递归处理
+    // 如果连续两个节点都是字符串会合并文本节点
     children = normalizeChildren(children);
   } else if (normalizationType === SIMPLE_NORMALIZE) {
+    //把二维数组转换为一维数组
+    // 如果children中有函数组件的话，函数组件会返回数组形式
+    // 这时候children就是一个二维数组，只需要把二维数组转换为一维数组
     children = simpleNormalizeChildren(children);
   }
   let vnode, ns;
+  //判断tag是字符串还是组件
   if (typeof tag === "string") {
     let Ctor;
     ns = (context.$vnode && context.$vnode.ns) || config.getTagNamespace(tag);
+    // 如果是浏览器的保留标签，创建对应的VNode
     if (config.isReservedTag(tag)) {
       // platform built-in elements
       if (
@@ -118,20 +136,26 @@ export function _createElement(
         undefined,
         context
       );
+    //判断是否是自定义组件
     } else if (
       (!data || !data.pre) &&
       isDef((Ctor = resolveAsset(context.$options, "components", tag)))
     ) {
       // component
+      // 查找自定义组件构造函数的声明
+      // 根据Ctor创建组件的VNode 
+      // 创建组件
       vnode = createComponent(Ctor, data, context, children, tag);
     } else {
       // unknown or unlisted namespaced elements
       // check at runtime because it may get assigned a namespace when its
       // parent normalizes children
+      //创建自定义标签
       vnode = new VNode(tag, data, children, undefined, undefined, context);
     }
   } else {
     // direct component options / constructor
+    // 创建组件的VNode
     vnode = createComponent(tag, data, context, children);
   }
   if (Array.isArray(vnode)) {
